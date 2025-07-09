@@ -1,0 +1,32 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+    - name: hello-test
+      id: hello-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test
+        setup-command: ''
+        command: dotnet test ./test/test-program.csproj
+        timeout: 10
+        max-score: 3
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        HELLO-TEST_RESULTS: "${{steps.hello-test.outputs.result}}"
+      with:
+        runners: hello-test
